@@ -18,22 +18,6 @@ clean Flask web interface with keyword highlighting is included.
 
 ---
 
-## Screenshots
-
-**Homepage**
-
-![Homepage](screenshots/home.png)
-
-**Multi-word query in OR mode** — `neural network` returns 55 matching documents
-
-![Results in OR mode](screenshots/results-or.png)
-
-**The same query in AND mode** — narrowed to 28 documents, showing boolean retrieval at work
-
-![Results in AND mode](screenshots/results-and.png)
-
----
-
 ## Domain
 
 **Educational content** — encyclopedic articles on Mathematics, Physics,
@@ -190,8 +174,3 @@ instead of stemming.
 
 The full project report is available here:
 [Marginalia_Search_Engine_Project_Report.pdf](Marginalia_Search_Engine_Project_Report.pdf)
-
----
-
-*Built as a university project — a specialized search engine demonstrating an
-inverted index, boolean retrieval, and TF-IDF ranking implemented from scratch.*
