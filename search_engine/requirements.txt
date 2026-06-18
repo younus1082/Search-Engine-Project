@@ -1,8 +1,0 @@
-# Preprocessing (tokenization, stopwords, stemming)
-nltk
-
-# Data collection — scraping the Wikipedia API (not a search/indexing library)
-requests
-
-# Web interface (bonus marks); pulls in markupsafe automatically
-flask
