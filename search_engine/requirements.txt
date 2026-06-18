@@ -1,0 +1,11 @@
+# Preprocessing (tokenization, stopwords, stemming)
+nltk
+
+# Data collection — scraping the Wikipedia API (not a search/indexing library)
+requests
+
+# Web interface (bonus marks); pulls in markupsafe automatically
+flask
+
+# Production WSGI server used when hosting (e.g. Render). Not needed locally.
+gunicorn
