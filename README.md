@@ -1,98 +1,197 @@
-# Marginalia — a specialized search engine for educational content
+# Marginalia — A Specialized Search Engine with an Inverted Index
 
-A search engine built **from scratch** over a corpus of educational articles
-scraped from Wikipedia. It implements its own inverted index, boolean
-(AND/OR) query processing, and TF-IDF ranking — **no pre-built search or
-indexing libraries** (no Elasticsearch, Whoosh, etc.). A small Flask web
-interface is included for the bonus marks.
+[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://marginalia-tv2m.onrender.com/)
+[![Python](https://img.shields.io/badge/Python-3.x-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![Flask](https://img.shields.io/badge/Flask-web%20interface-000000?logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
+[![No Search Libraries](https://img.shields.io/badge/inverted%20index-from%20scratch-orange)]()
+
+A specialized search engine built **entirely from scratch** over a corpus of
+educational articles collected from Wikipedia. It implements its own inverted
+index, boolean (AND / OR) query processing, and TF-IDF ranking — with **no
+pre-built search or indexing libraries** (no Elasticsearch, Whoosh, etc.). A
+clean Flask web interface with keyword highlighting is included.
+
+### Live demo: **https://marginalia-tv2m.onrender.com/**
+
+> The demo is hosted on a free tier, so the first request after a period of
+> inactivity may take ~30–50 seconds to wake up. After that it responds instantly.
+
+---
+
+## Screenshots
+
+**Homepage**
+
+![Homepage](screenshots/home.png)
+
+**Multi-word query in OR mode** — `neural network` returns 55 matching documents
+
+![Results in OR mode](screenshots/results-or.png)
+
+**The same query in AND mode** — narrowed to 28 documents, showing boolean retrieval at work
+
+![Results in AND mode](screenshots/results-and.png)
+
+---
 
 ## Domain
 
-**Educational content** — encyclopedic articles on mathematics, physics,
-computer science, machine learning, and biology. The corpus is collected
-from Wikipedia via its official API.
+**Educational content** — encyclopedic articles on Mathematics, Physics,
+Computer Science, Machine Learning, and Biology, collected from the official
+Wikipedia (MediaWiki) API. The full index covers **156 documents** and
+**11,689 unique terms**.
+
+## Features
+
+- **Inverted index built from scratch** — maps each term to the documents and
+  positions where it appears, using only plain Python data structures.
+- **Boolean retrieval** — `AND` (all words) and `OR` (any word) query modes.
+- **TF-IDF ranking** — relevance scoring with document-length normalisation.
+- **Single- and multi-word queries.**
+- **Snippets with keyword highlighting** — each result shows the title, link,
+  a relevant snippet, and a relevance score.
+- **Clean, responsive web interface** with an animated homepage.
+
+## How it works
+
+The system runs as a four-stage pipeline:
+
+```
+scrape.py         collect articles from the Wikipedia API     data/docs.json
+build_index.py    build the inverted index                    data/index.pkl
+search.py         query  boolean filter  TF-IDF rank  snippets
+app.py            Flask web interface wrapping the search engine
+```
+
+1. **Preprocessing** (`preprocess.py`) — lowercases text, tokenises it, removes
+   stopwords, and applies Porter stemming. Documents and queries pass through
+   the **same** pipeline so their terms line up.
+2. **Inverted index** (`inverted_index.py`) — stores:
+
+   ```
+   term    { document_id    [position1, position2, ...] }
+   ```
+
+   Storing positions gives term frequency, snippet locations, and a path to
+   phrase queries from a single structure.
+3. **Ranking** (`search.py`) — TF-IDF:
+
+   ```
+   tf  = 1 + log10(frequency of term in document)
+   idf = log10( N / number of documents containing the term )
+   score = Σ (tf × idf)  ÷  √(document length)
+   ```
+
+## Tech stack
+
+- **Python** — core language
+- **NLTK** — preprocessing only (tokenisation, stopwords, stemming)
+- **Flask** — web interface (bonus)
+- **requests** — data collection from the Wikipedia API
+- **gunicorn** — production server used in deployment
+
+> NumPy and Pandas are permitted by the assignment but were not needed, so they
+> are not dependencies.
 
 ## Project structure
 
 ```
-search_engine/
-├── scrape.py           # 1. collect articles from the Wikipedia API -> data/docs.json
-├── build_index.py      # 2. build the inverted index            -> data/index.pkl
-├── preprocess.py       #    text cleaning: tokenize, stopwords, stemming (NLTK)
-├── inverted_index.py   #    the inverted index (core requirement)
-├── search.py           # 3. query processing + TF-IDF ranking + snippets
-├── app.py              # 4. Flask web interface (bonus)
-├── templates/          #    index.html (search bar) + results.html
-├── static/style.css    #    UI styling
-├── data/               #    docs.json + index.pkl live here
-├── requirements.txt
-└── README.md
+Search-Engine-Project/
+├── README.md
+├── Marginalia_Search_Engine_Project_Report.pdf
+├── screenshots/
+└── search_engine/
+    ├── scrape.py            # collect articles from the Wikipedia API
+    ├── build_index.py       # build and save the inverted index
+    ├── preprocess.py        # tokenize, stopwords, stemming (NLTK)
+    ├── inverted_index.py    # the inverted index (core requirement)
+    ├── search.py            # query processing + TF-IDF ranking + snippets
+    ├── app.py               # Flask web interface
+    ├── templates/           # index.html (search bar) + results.html
+    ├── static/style.css     # UI styling
+    ├── data/                # docs.json (+ index.pkl, generated)
+    └── requirements.txt
 ```
 
-## How it works
-
-1. **Scrape** (`scrape.py`) pulls plain-text articles from Wikipedia categories
-   and saves them as `data/docs.json`. Using the API (not raw HTML) keeps the
-   text clean and respects Wikipedia's usage rules.
-2. **Preprocess** (`preprocess.py`) lowercases text, splits it into word
-   tokens, removes stopwords, and stems each token (Porter stemmer). Documents
-   and queries go through the *same* pipeline so their terms line up.
-3. **Index** (`inverted_index.py`) maps every term to the documents that
-   contain it, storing the **positions** of each occurrence:
-
-   ```
-   term -> { doc_id -> [pos1, pos2, ...] }
-   ```
-
-   Positions give us term frequency (for ranking) and snippet locations for
-   free.
-4. **Search** (`search.py`):
-   - **Boolean retrieval** — AND intersects the documents for each term; OR
-     unions them.
-   - **Ranking** — TF-IDF: `tf = 1 + log10(freq)`, `idf = log10(N / df)`,
-     score `= Σ tf·idf`, normalised by `sqrt(document length)`.
-   - **Snippets** — a preview centred on the first matched term, with matched
-     words wrapped in `<mark>` for highlighting.
-
-## Setup & run
+## Getting started (run locally)
 
 ```bash
-# 1. install dependencies
+# clone the repository
+git clone https://github.com/younus1082/Search-Engine-Project.git
+cd Search-Engine-Project/search_engine
+
+# install dependencies
 pip install -r requirements.txt
 
-# 2. collect the corpus (takes a few minutes; needs internet)
+# (optional) collect a fresh corpus from Wikipedia — needs internet
 python scrape.py
 
-# 3. build the inverted index
+# build the inverted index
 python build_index.py
 
-# 4a. search from the command line
-python search.py
-#    (prefix a query with "AND:" or "OR:" to choose the mode)
-
-# 4b. ...or launch the web interface
+# launch the web interface
 python app.py
-#    then open http://127.0.0.1:5000
+# then open http://127.0.0.1:5000
 ```
 
-A small sample `data/docs.json` is included so you can run
-`build_index.py` and try the engine immediately, before scraping the full
-corpus.
+A sample `data/docs.json` is included, so you can run `build_index.py` and try
+the engine immediately without scraping first.
 
-## Allowed libraries
+You can also search from the command line:
 
-Per the assignment, NumPy, Pandas, and NLTK (preprocessing only) are permitted.
-This project uses **NLTK** for preprocessing; NumPy and Pandas are allowed but
-were not needed, so they are not dependencies. `requests` is used for data
-collection and `flask` for the optional web interface — neither is a search or
-indexing library.
+```bash
+python search.py
+# prefix a query with "AND:" or "OR:" to choose the mode (default OR)
+```
 
-## Notes / known trade-offs
+## Usage
 
-- **TF-IDF** ignores word order and meaning: "machine learning" and "learning
-  machine" score identically. A phrase-query mode could use the stored
-  positions to fix this.
-- **Stemming is aggressive**: the Porter stemmer occasionally over-stems
-  (e.g. "university" → "univers"), which can merge unrelated words.
-- The index is held in memory and pickled to disk; it suits a few thousand
-  documents comfortably but is not designed for web-scale corpora.
+- Type a single word (e.g. `calculus`) or multiple words (e.g. `neural network`).
+- Choose a match mode:
+  - **Any word (OR)** — returns documents containing at least one term (broader).
+  - **All words (AND)** — returns documents containing every term (narrower).
+- Results are ranked by TF-IDF relevance, with matching keywords highlighted.
+
+## Deployment
+
+The app is deployed on **Render** directly from this repository:
+
+- **Root Directory:** `search_engine`
+- **Build Command:** `pip install -r requirements.txt`
+- **Start Command:** `gunicorn app:app --bind 0.0.0.0:$PORT`
+
+The inverted index is built automatically on first startup from the committed
+`data/docs.json`, so no manual build step is required on the host.
+
+## Limitations & future work
+
+- TF-IDF treats queries as a bag of words — it ignores word order and meaning,
+  so `machine learning` and `learning machine` score identically.
+- Porter stemming can occasionally be aggressive and merge unrelated words.
+- The corpus contains a few non-article pages collected via category membership;
+  filtering the crawl to genuine articles would improve quality.
+- The index is held in memory, which suits a few thousand documents but not
+  web-scale collections.
+
+Possible improvements: phrase queries using the stored positions, field
+weighting (title matches counting more than body matches), and lemmatisation
+instead of stemming.
+
+## Team
+
+| Member | Student ID |
+| --- | --- |
+| Younus (Group Leader) | 0432220005101082 |
+| Autoshi Aunkita Phoebe | 0432220005101081 |
+| Shahida Akter Rimu | 0432220005101091 |
+| Nur A Zannat Ruba | 0432220005101105 |
+
+## Report
+
+The full project report is available here:
+[Marginalia_Search_Engine_Project_Report.pdf](Marginalia_Search_Engine_Project_Report.pdf)
+
+---
+
+*Built as a university project — a specialized search engine demonstrating an
+inverted index, boolean retrieval, and TF-IDF ranking implemented from scratch.*
