@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Marginalia &middot; educational search</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="home">
+  <!-- drifting gradient circles, purely decorative ambient motion -->
+  <div class="bg" aria-hidden="true">
+    <span class="blob blob-1"></span>
+    <span class="blob blob-2"></span>
+    <span class="blob blob-3"></span>
+    <span class="blob blob-4"></span>
+  </div>
+
+  <!-- faint ruled-paper margin line, like a notebook -->
+  <div class="margin-rule" aria-hidden="true"></div>
+
+  <main class="home-wrap">
+    <p class="eyebrow reveal" style="--d: 0ms">a hand-built search engine</p>
+
+    <h1 class="wordmark reveal swipe" style="--d: 80ms" title="click me">Marginalia</h1>
+
+    <p class="tagline reveal" style="--d: 220ms">
+      Search an index of {{ total_docs }} educational articles &mdash;
+      no search libraries, just an inverted index and TF-IDF ranking.
+    </p>
+
+    <form class="search-form reveal" style="--d: 340ms"
+          action="{{ url_for('search') }}" method="get" role="search">
+      <div class="input-wrap">
+        <span class="search-icon" aria-hidden="true">&#9906;</span>
+        <input
+          class="search-input"
+          type="text"
+          name="q"
+          placeholder="Search a topic&hellip;"
+          autofocus
+          autocomplete="off"
+          aria-label="Search query">
+      </div>
+
+      <div class="controls">
+        <fieldset class="mode">
+          <legend>Match</legend>
+          <label class="seg"><input type="radio" name="mode" value="OR" checked><span>any word (OR)</span></label>
+          <label class="seg"><input type="radio" name="mode" value="AND"><span>all words (AND)</span></label>
+        </fieldset>
+        <div class="actions">
+          <button class="surprise" type="button">Surprise me</button>
+          <button class="search-button" type="submit">Search</button>
+        </div>
+      </div>
+    </form>
+
+    <div class="examples reveal" style="--d: 460ms">
+      <span class="examples-label">Try:</span>
+      <button class="chip" type="button" data-q="machine learning">machine learning</button>
+      <button class="chip" type="button" data-q="calculus">calculus</button>
+      <button class="chip" type="button" data-q="photosynthesis">photosynthesis</button>
+      <button class="chip" type="button" data-q="neural network">neural network</button>
+      <button class="chip" type="button" data-q="algorithm">algorithm</button>
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      const form  = document.querySelector('.search-form');
+      const input = document.querySelector('.search-input');
+
+      function runQuery(text) {
+        input.value = text;
+        if (form.requestSubmit) { form.requestSubmit(); } else { form.submit(); }
+      }
+
+      // Clickable example chips -> fill the box and search.
+      const chips = Array.from(document.querySelectorAll('.chip'));
+      chips.forEach(chip => {
+        chip.addEventListener('click', () => runQuery(chip.dataset.q));
+      });
+
+      // "Surprise me" -> pick a random example.
+      const surprise = document.querySelector('.surprise');
+      surprise.addEventListener('click', () => {
+        const ideas = chips.map(c => c.dataset.q);
+        runQuery(ideas[Math.floor(Math.random() * ideas.length)]);
+      });
+
+      // Click the wordmark to replay the highlighter swipe.
+      const wordmark = document.querySelector('.wordmark');
+      wordmark.addEventListener('click', () => {
+        wordmark.classList.remove('swipe');
+        void wordmark.offsetWidth;   // force reflow so the animation restarts
+        wordmark.classList.add('swipe');
+      });
+    })();
+  </script>
+</body>
+</html>

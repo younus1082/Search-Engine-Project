@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ query }} &middot; Marginalia</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="results">
+  <header class="results-header">
+    <a class="wordmark-small" href="{{ url_for('home') }}">Marginalia</a>
+    <form class="search-form-inline" action="{{ url_for('search') }}" method="get" role="search">
+      <input class="search-input-inline" type="text" name="q" value="{{ query }}"
+             autocomplete="off" aria-label="Search query">
+      <select name="mode" class="mode-select" aria-label="Match mode">
+        <option value="OR"  {% if mode == 'OR'  %}selected{% endif %}>any (OR)</option>
+        <option value="AND" {% if mode == 'AND' %}selected{% endif %}>all (AND)</option>
+      </select>
+      <button class="search-button-inline" type="submit">Search</button>
+    </form>
+  </header>
+
+  <main class="results-main">
+    {% if query %}
+      <p class="result-stats">
+        Showing top {{ results|length }} of {{ total_matches }}
+        matching document{{ '' if total_matches == 1 else 's' }}
+        for <strong>{{ query }}</strong>
+        &middot; {{ mode }} mode &middot; {{ elapsed }} ms
+      </p>
+    {% endif %}
+
+    {% if query and not results %}
+      <div class="empty">
+        <p>Nothing matched <strong>{{ query }}</strong>.</p>
+        <p>Try fewer words, check the spelling, or switch to <em>any word (OR)</em> matching.</p>
+      </div>
+    {% endif %}
+
+    <ol class="result-list">
+      {% for hit in results %}
+        <li class="result">
+          <a class="result-title" href="{{ hit.url }}" target="_blank" rel="noopener">
+            {{ hit.title }}
+          </a>
+          <span class="result-url">{{ hit.url }}</span>
+          <p class="result-snippet">{{ hit.snippet }}</p>
+          <span class="result-score">relevance {{ hit.score }}</span>
+        </li>
+      {% endfor %}
+    </ol>
+  </main>
+</body>
+</html>
