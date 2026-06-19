@@ -74,9 +74,6 @@ app.py            Flask web interface wrapping the search engine
 - **requests** — data collection from the Wikipedia API
 - **gunicorn** — production server used in deployment
 
-> NumPy and Pandas are permitted by the assignment but were not needed, so they
-> are not dependencies.
-
 ## Project structure
 
 ```
