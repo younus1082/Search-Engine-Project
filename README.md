@@ -157,15 +157,6 @@ Possible improvements: phrase queries using the stored positions, field
 weighting (title matches counting more than body matches), and lemmatisation
 instead of stemming.
 
-## Team
-
-| Member | Student ID |
-| --- | --- |
-| Younus (Group Leader) | 0432220005101082 |
-| Autoshi Aunkita Phoebe | 0432220005101081 |
-| Shahida Akter Rimu | 0432220005101091 |
-| Nur A Zannat Ruba | 0432220005101105 |
-
 ## Report
 
 The full project report is available here:
