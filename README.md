@@ -79,7 +79,6 @@ app.py            Flask web interface wrapping the search engine
 ```
 Search-Engine-Project/
 ├── README.md
-├── Marginalia_Search_Engine_Project_Report.pdf
 ├── screenshots/
 └── search_engine/
     ├── scrape.py            # collect articles from the Wikipedia API
